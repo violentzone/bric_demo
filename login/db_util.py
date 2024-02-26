@@ -1,4 +1,4 @@
-""" Utility of login, containing create, verify passwords etc"""
+""" Utility of te, containing create, verify passwords etc"""
 import pymysql
 from json import loads
 from passlib.hash import pbkdf2_sha256
@@ -8,7 +8,7 @@ class DbOperator:
     def __init__(self):
 
         """
-        Init, check if able to login and create database 'leavesystem' if not exists
+        Init, check if able to te and create database 'leavesystem' if not exists
         """
         # Get json config
         with open('infos/db.json') as f:
@@ -40,7 +40,7 @@ class DbOperator:
                 cursor.execute(user_info_sql, user_name)
                 user_info = cursor.fetchone()
         except:
-            ValueError('Cannot query user information during login check')
+            ValueError('Cannot query user information during te check')
         # Check if get anything
         if user_info is None:
             return False
