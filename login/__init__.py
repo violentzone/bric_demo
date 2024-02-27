@@ -1,1 +1,1 @@
-from .view import loginApp
+from .api import loginApp
