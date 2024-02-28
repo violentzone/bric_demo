@@ -15,7 +15,7 @@ def login():
     else:
         return jsonify({'verification': "Invalid password", 'access_token': None})
 
-@loginApp.route('./create', methods=['POST'])
+@loginApp.route('/create', methods=['POST'])
 def create_user():
     try:
         username_create = request.json['username']
