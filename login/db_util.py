@@ -28,14 +28,15 @@ class DbOperator:
             if_table = """
             CREATE TABLE IF NOT EXISTS leavesystem.users (
             ID BIGINT NOT NULL AUTO_INCREMENT,
-            userName text,
+            userName varchar(255),
+            name text,
             hashpassword varchar(255),
             createdate datetime,
             PRIMARY KEY (ID) 
             );"""
 
             add_user = """
-            INSERT INTO leavesystem.users VALUES (1, 'admin', %s, %s);
+            INSERT INTO leavesystem.users VALUES (1, 'admin', 'admin', %s, %s);
             """
 
             connection = pymysql.connect(host=db_config['url'], user=db_config['user'], password=db_config['password'])
@@ -67,6 +68,18 @@ class DbOperator:
         else:
             return False
 
+
+    def user_info(self, username: str):
+        user_to_id_sql = """
+        SELECT ID, username FROM leavesystem.users WHERE username = %s
+        """
+        with self.connection.cursor() as cursor:
+            cursor.execute(user_to_id_sql, username)
+            user = cursor.fetchone()
+            userID = user[0]
+            username = user[1]
+        return  userID, username
+
     def create_user(self, user_name: str, password: str) -> bool:
 
         # Check if any identical userName in db
@@ -83,9 +96,9 @@ class DbOperator:
             password_hash = pbkdf2_sha256.hash(password, salt=b'the_salt')
             create_time = datetime.now()
             insert_user_sql = """
-            INSERT INTO leavesystem.users (userName, hashpassword, createdate) VALUES (%s, %s, %s)"""
+            INSERT INTO leavesystem.users (userName, name, hashpassword, createdate) VALUES (%s, %s ,%s, %s)"""
 
             with self.connection.cursor() as cursor:
-                cursor.execute(insert_user_sql, (user_name, password_hash, create_time))
+                cursor.execute(insert_user_sql, (user_name, user_name, password_hash, create_time))
                 self.connection.commit()
             return True

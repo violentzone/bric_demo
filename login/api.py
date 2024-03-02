@@ -11,9 +11,10 @@ def login():
     password = request.json['password']
     if operator.login_check(username, password):
         access_token = create_access_token(identity=username)
-        return jsonify({'verification': "Login passed", 'access_token': access_token})
+        userID, username_rsp = operator.user_info(username)
+        return jsonify({'verification': "Login passed", 'access_token': access_token, 'userID': userID, 'username': username_rsp})
     else:
-        return jsonify({'verification': "Invalid password", 'access_token': None})
+        return jsonify({'verification': "Invalid password", 'access_token': None, 'userID': None, 'username': None})
 
 @loginApp.route('/create', methods=['POST'])
 def create_user():

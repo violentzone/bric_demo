@@ -36,6 +36,17 @@ class DbOperator:
         finally:
             self.connection = pymysql.connect(host=db_config['url'], user=db_config['user'], password=db_config['password'], database='leavesystem')
 
+
+    def id_to_name(self, user_id: int):
+        user2name_sql = """
+        SELECT name FROM leavesystem.users
+        WHERE ID = %s
+        """
+        with self.connection.cursor() as cursor:
+            cursor.execute(user2name_sql, user_id)
+            name = cursor.fetchone()[0]
+        return name
+
     def unsign_num(self, user_id):
         unsign_sql = """
         SELECT count(ID) FROM leavesystem.forms WHERE userid = %s 
