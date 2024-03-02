@@ -22,7 +22,7 @@ class DbOperator:
         except:
             # Create leavesystem.forms
             create_forms_sql = """
-            CREATE TABLE IF NOT EXISTS leavsystem.forms(
+            CREATE TABLE IF NOT EXISTS leavesystem.forms(
             ID varchar(255) NOT NULL,
             userid BIGINT,
             type text,
