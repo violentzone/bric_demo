@@ -83,9 +83,27 @@ class DbOperator:
         cursor.close()
         self.connection = connection
 
-    def create_leave_getinfo(self, user_id: int):
-        # Get apply user information
+    def create_leave_getinfo(self, user_id: int) -> dict:
+        """
+        Input userID return user inforamtion
 
+        Params
+        =======
+        user_id: userID
+
+        Return
+        =======
+        Dict of {'name':  'supervisorID_1':, 'supervisorID_2': , 'supervisorID_3': , 'department': , 'level': }
+        """
+
+        # Get apply user information
         with self.connection.cursor() as cursor:
-            cursor.execute()
+            create_user_sql = """
+            SELECT name, supervisorID_1, supervisorID_2, supervisorID_3, department, level
+            FROM leavesystem.users
+            WHERE ID = %s
+            """
+            cursor.execute(create_user_sql, user_id)
+            user_info = cursor.fetchone()
+        return {'name': user_info[0], 'supervisorID_1': user_info[1], 'supervisorID_2': user_info[2], 'supervisorID_3': user_info[3], 'department': user_info[4], 'level': user_info[5]}
 
