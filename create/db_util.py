@@ -84,5 +84,8 @@ class DbOperator:
         self.connection = connection
 
     def create_leave_getinfo(self, user_id: int):
-        # with self.connection.cursor() as cursor:
+        # Get apply user information
+
+        with self.connection.cursor() as cursor:
+            cursor.execute()
 
