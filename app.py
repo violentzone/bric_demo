@@ -3,6 +3,7 @@ from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from login import *
 from home import *
+from create import *
 
 app = Flask(__name__)
 jwt = JWTManager()
@@ -12,6 +13,7 @@ jwt.init_app(app)
 
 app.register_blueprint(loginApp)
 app.register_blueprint(homeApp)
+app.register_blueprint(createApp)
 
 
 
