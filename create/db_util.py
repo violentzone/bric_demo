@@ -1,6 +1,8 @@
 import pymysql
 from json import loads
 from datetime import datetime
+from home import db_util as home_db
+from uuid import uuid4
 
 class DbOperator:
     def __init__(self):
@@ -93,7 +95,7 @@ class DbOperator:
 
         Return
         =======
-        Dict of {'name':  'supervisorID_1':, 'supervisorID_2': , 'supervisorID_3': , 'department': , 'level': }
+        Dict of {'name':  'supervisorID_1':, 'supervisorID_2': , 'supervisorID_3': , 'department': , 'level': , 'leave_remain'}
         """
 
         # Get apply user information
@@ -105,5 +107,59 @@ class DbOperator:
             """
             cursor.execute(create_user_sql, user_id)
             user_info = cursor.fetchone()
-        return {'name': user_info[0], 'supervisorID_1': user_info[1], 'supervisorID_2': user_info[2], 'supervisorID_3': user_info[3], 'department': user_info[4], 'level': user_info[5]}
 
+        # Get user remain leaves
+        with self.connection.cursor() as cursor:
+            get_leave_sql = """
+            SELECT leave_type, hours FROM leavesystem.leaveleft
+            WHERE userID = %s
+            """
+            cursor.execute(get_leave_sql, user_id)
+            leave_remain = cursor.fetchall()
+
+        return {'name': user_info[0], 'supervisorID_1': user_info[1], 'supervisorID_2': user_info[2], 'supervisorID_3': user_info[3], 'department': user_info[4], 'level': user_info[5], 'leave_remain': leave_remain}
+
+    def create_apply(self, user_id: int, start_time: datetime, end_time: datetime, leave_type: int, reason: str) -> dict:
+        """
+        Function after user send out leave application
+
+        Params
+        =======
+        userID(int): Applicant's ID.
+        start_time(datatime): Leave start time.
+        end_time(datatime): Leave end time.
+        leave_type(int): The leave type of the application.
+        reason(str): Recorded leave reason.
+
+        Return
+        =======
+        If succeed:
+        {'result': 'success', 'message': None}
+        If failed:
+        {'result': 'fail', 'message': 'the_reason'}
+        """
+
+        # Apply validation check
+        left_leave_sql = """
+        SELECT leave_type, hours FROM leavesystem.leaveleft
+        WHERE userID = %s
+        """
+        with self.connection.cursor() as cursor:
+            get_leave_sql = """
+            SELECT leave_type, hours FROM leavesystem.leaveleft
+            WHERE userID = %s
+            """
+            cursor.execute(get_leave_sql, user_id)
+            leave_remain = cursor.fetchall()
+            leave_remain_dict = {leaveid[0]: leaveid[1] for leaveid in leave_remain}
+            leave_duration = (end_time - start_time)/60
+            # If apply duration > remain etc, return fail
+            if leave_type not in leave_remain_dict:
+                return {'result': 'fail', 'message': 'Leave type not available'}
+            elif leave_duration > leave_remain_dict[leave_type]:
+                return {'result': 'fail', 'message': 'Not enough leave time'}
+            else:
+                load_create_sql = """
+                INSERT INTO leavesystem.create
+                
+                """
