@@ -155,7 +155,6 @@ class DbOperator:
         leave_remain_dict = {leave[0]: leave[1] for leave in leave_remain}
         creating_dict = {creating[0]: creating[1] for creating in creating_list}
         dict_diff = util.leave_dict_diff(leave_remain_dict, creating_dict)
-        print(dict_diff)
         if dict_diff['status'] == 'valid':
             leave_remain_return = dict_diff['content']
             return {'name': user_info[0], 'supervisorID_1': user_info[1], 'supervisorID_2': user_info[2], 'supervisorID_3': user_info[3], 'department': user_info[4], 'level': user_info[5], 'leave_remain': leave_remain_return}
