@@ -9,4 +9,4 @@ operator = db_util.DbOperator()
 def creator_info():
     userid = request.json['user_id']
     user_info = operator.create_leave_getinfo(userid)
-    return user_info
+    return jsonify(user_info)
