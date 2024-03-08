@@ -10,7 +10,7 @@ from create import util
 class DbOperator:
     def __init__(self):
         """
-        Create leavesystem.create table if not exists
+        Create leavesystem.create, leavesystem.leavetype and leavesystem.leaveleft table if not exists
         """
         # Read setting
         with open('infos/db.json') as f:
@@ -105,6 +105,7 @@ class DbOperator:
         cursor.close()
         self.connection = connection
 
+
     def create_leave_getinfo(self, user_id: int) -> dict:
         """
         Input userID return user inforamtion
@@ -115,7 +116,7 @@ class DbOperator:
 
         Return
         =======
-        Dict of {'name':  'supervisorID_1':, 'supervisorID_2': , 'supervisorID_3': , 'department': , 'level': , 'leave_remain'DICT}
+        Dict of {'user_id':  'name':  'supervisorID_1':, 'suervisorName_1', 'supervisorID_2':, 'suervisorName_2', 'supervisorID_3': ,'suervisorName_3', 'department': , 'level': , 'leave_remain'DICT/ 'error'(str)}
         """
         # Get set leave
         get_leave_type_sql = """
@@ -129,12 +130,26 @@ class DbOperator:
         # Get apply user information
         with self.connection.cursor() as cursor:
             create_user_sql = """
-            SELECT name, supervisorID_1, supervisorID_2, supervisorID_3, department, level
+            SELECT ID, name, supervisorID_1, supervisorID_2, supervisorID_3, department, level
             FROM leavesystem.users
             WHERE ID = %s
             """
             cursor.execute(create_user_sql, user_id)
             user_info = cursor.fetchone()
+
+        # Get supervisor's name, if supervisor 1 is None, then don't need to keep checking supervisor 2 as well
+        supervisorID_list = list((user_info[2:5]))
+
+        supervisor_name_sql = """
+        SELECT name FROM leavesystem.users WHERE ID = %s
+        """
+        for i in range(len(supervisorID_list)):
+            if supervisorID_list[i] is None:
+                break
+            else:
+                with self.connection.cursor() as cursor:
+                    cursor.execute(supervisor_name_sql, supervisorID_list[i])
+                    supervisorID_list[i] = str(supervisorID_list[i]) + '    ' + cursor.fetchone()[0]
 
         # Get user remain leaves -> get leave type dict, find the key(leaveID), build element leave_remain dict of the minus applying leave respectively
         with self.connection.cursor() as cursor:
@@ -157,10 +172,11 @@ class DbOperator:
         dict_diff = util.leave_dict_diff(leave_remain_dict, creating_dict)
         if dict_diff['status'] == 'valid':
             leave_remain_return = dict_diff['content']
-            return {'name': user_info[0], 'supervisorID_1': user_info[1], 'supervisorID_2': user_info[2], 'supervisorID_3': user_info[3], 'department': user_info[4], 'level': user_info[5], 'leave_remain': leave_remain_return}
+            return {'user_id':user_info[0], 'name': user_info[1], 'supervisor1': supervisorID_list[0], 'supervisor2': supervisorID_list[1], 'supervisor3': supervisorID_list[2], 'department': user_info[5], 'level': user_info[6], 'leave_remain': leave_remain_return}
         else:
             error_message = dict_diff['content']
-            return {'name': user_info[0], 'supervisorID_1': user_info[1], 'supervisorID_2': user_info[2], 'supervisorID_3': user_info[3], 'department': user_info[4], 'level': user_info[5], 'error': error_message}
+            return {'user_id':user_info[0], 'name': user_info[1], 'supervisor1': supervisorID_list[0], 'supervisor2': supervisorID_list[1], 'supervisor3': supervisorID_list[2], 'department': user_info[5], 'level': user_info[6], 'error': error_message}
+
 
     def create_apply(self, user_id: int, start_time: datetime, end_time: datetime, leave_type: int, reason: str) -> dict:
         """
