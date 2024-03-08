@@ -105,7 +105,6 @@ class DbOperator:
         cursor.close()
         self.connection = connection
 
-
     def create_leave_getinfo(self, user_id: int) -> dict:
         """
         Input userID return user inforamtion
@@ -116,7 +115,7 @@ class DbOperator:
 
         Return
         =======
-        Dict of {'user_id':  'name':  'supervisorID_1':, 'suervisorName_1', 'supervisorID_2':, 'suervisorName_2', 'supervisorID_3': ,'suervisorName_3', 'department': , 'level': , 'leave_remain'DICT/ 'error'(str)}
+        Dict of {'blank_info'{'user_id':  'name':  'supervisorID_1':, 'suervisorName_1', 'supervisorID_2':, 'suervisorName_2', 'supervisorID_3': ,'suervisorName_3', 'department': , 'level': , 'leave_remain'DICT/ 'error'(str)}, 'leave_type_dict'}
         """
         # Get set leave
         get_leave_type_sql = """
@@ -125,7 +124,7 @@ class DbOperator:
         with self.connection.cursor() as cursor:
             cursor.execute(get_leave_type_sql)
             leave_query = cursor.fetchall()
-        leave_type_dict = {leave_set[0]: leave_set[1] + leave_set[2] for leave_set in leave_query}
+        leave_type_dict = {leave_set[0]: [leave_set[1], leave_set[2]] for leave_set in leave_query}
 
         # Get apply user information
         with self.connection.cursor() as cursor:
@@ -172,11 +171,12 @@ class DbOperator:
         dict_diff = util.leave_dict_diff(leave_remain_dict, creating_dict)
         if dict_diff['status'] == 'valid':
             leave_remain_return = dict_diff['content']
-            return {'user_id':user_info[0], 'name': user_info[1], 'supervisor1': supervisorID_list[0], 'supervisor2': supervisorID_list[1], 'supervisor3': supervisorID_list[2], 'department': user_info[5], 'level': user_info[6], 'leave_remain': leave_remain_return}
+            return {'blank_info': {'user_id': user_info[0], 'name': user_info[1], 'supervisor1': supervisorID_list[0], 'supervisor2': supervisorID_list[1], 'supervisor3': supervisorID_list[2], 'department': user_info[5], 'level': user_info[6], 'leave_remain': leave_remain_return},
+                    'leave_type_dict': leave_type_dict}
         else:
             error_message = dict_diff['content']
-            return {'user_id':user_info[0], 'name': user_info[1], 'supervisor1': supervisorID_list[0], 'supervisor2': supervisorID_list[1], 'supervisor3': supervisorID_list[2], 'department': user_info[5], 'level': user_info[6], 'error': error_message}
-
+            return {'blank_info': {'user_id': user_info[0], 'name': user_info[1], 'supervisor1': supervisorID_list[0], 'supervisor2': supervisorID_list[1], 'supervisor3': supervisorID_list[2], 'department': user_info[5], 'level': user_info[6], 'error': error_message},
+                    'leave_type_dict': leave_type_dict}
 
     def create_apply(self, user_id: int, start_time: datetime, end_time: datetime, leave_type: int, reason: str) -> dict:
         """
