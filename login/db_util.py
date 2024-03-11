@@ -31,7 +31,9 @@ class DbOperator:
             userName varchar(255),
             name text,
             hashpassword varchar(255),
-            supervisorID BIGINT,
+            supervisorID_1 BIGINT,
+            supervisorID_2 BIGINT,
+            supervisorID_3 BIGINT,
             createdate datetime,
             department varchar(255),
             level int,
@@ -39,7 +41,7 @@ class DbOperator:
             );"""
 
             add_user = """
-            INSERT INTO leavesystem.users VALUES (1, 'admin', 'admin', %s, null, %s, '0000', 0);
+            INSERT INTO leavesystem.users VALUES (1, 'admin', 'admin', %s, null, null, null, %s, '0000', 0);
             """
 
             connection = pymysql.connect(host=db_config['url'], user=db_config['user'], password=db_config['password'])
@@ -83,7 +85,7 @@ class DbOperator:
             username = user[1]
         return  userID, username
 
-    def create_user(self, user_name: str, password: str, supervisorID: int, level: int, dept: str) -> bool:
+    def create_user(self, user_name: str, password: str, name: str, supervisorID_1: int, supervisorID_2: int, supervisorID_3: int, level: int, dept: str) -> bool:
 
         # Check if any identical userName in db
         check_exists_sql = """
@@ -99,9 +101,9 @@ class DbOperator:
             password_hash = pbkdf2_sha256.hash(password, salt=b'the_salt')
             create_time = datetime.now()
             insert_user_sql = """
-            INSERT INTO leavesystem.users (userName, name, hashpassword, supervisorID, createdate, level, department) VALUES (%s, %s ,%s, %s, %s, %s, %s)"""
+            INSERT INTO leavesystem.users (userName, name, hashpassword, supervisorID_1, supervisorID_2, supervisorID_3, createdate, level, department) VALUES (%s, %s ,%s, %s, %s, %s, %s, %s, %s)"""
 
             with self.connection.cursor() as cursor:
-                cursor.execute(insert_user_sql, (user_name, user_name, password_hash, supervisorID, create_time, level, dept))
+                cursor.execute(insert_user_sql, (user_name, name, password_hash, supervisorID_1, supervisorID_2, supervisorID_3, create_time, level, dept))
                 self.connection.commit()
             return True
