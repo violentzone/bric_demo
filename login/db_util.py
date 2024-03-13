@@ -64,7 +64,6 @@ class DbOperator:
 
         # Check if gets anything
         if user_info is None:
-            print(user_info)
             return False
 
         # Check if password can verify
