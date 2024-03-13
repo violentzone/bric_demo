@@ -57,14 +57,14 @@ class DbOperator:
         user_info_sql = """
         SELECT userName, hashpassword FROM leavesystem.users where userName = %s
         """
-        try:
-            with self.connection.cursor() as cursor:
-                cursor.execute(user_info_sql, user_name)
-                user_info = cursor.fetchone()
-        except:
-            ValueError('Cannot query user information during te check')
+
+        with self.connection.cursor() as cursor:
+            cursor.execute(user_info_sql, user_name)
+            user_info = cursor.fetchone()
+
         # Check if gets anything
         if user_info is None:
+            print(user_info)
             return False
 
         # Check if password can verify
