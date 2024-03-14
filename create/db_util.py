@@ -135,6 +135,7 @@ class DbOperator:
             """
             cursor.execute(create_user_sql, user_id)
             user_info = cursor.fetchone()
+            self.connection.commit()
 
         # Get supervisor's name, if supervisor 1 is None, then don't need to keep checking supervisor 2 as well
         supervisorID_list = list((user_info[2:5]))
@@ -149,6 +150,7 @@ class DbOperator:
                 with self.connection.cursor() as cursor:
                     cursor.execute(supervisor_name_sql, supervisorID_list[i])
                     supervisorID_list[i] = str(supervisorID_list[i]) + '    ' + cursor.fetchone()[0]
+                    self.connection.commit()
 
         # Get user remain leaves -> get leave type dict, find the key(leaveID), build element leave_remain dict of the minus applying leave respectively
         with self.connection.cursor() as cursor:
@@ -166,6 +168,7 @@ class DbOperator:
             leave_remain = cursor.fetchall()
             cursor.execute(get_apply_sql, user_id)
             creating_list = cursor.fetchall()
+            self.connection.commit()
         leave_remain_dict = {leave[0]: leave[1] for leave in leave_remain}
         creating_dict = {creating[0]: creating[1] for creating in creating_list}
         dict_diff = util.leave_dict_diff(leave_remain_dict, creating_dict)

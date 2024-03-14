@@ -67,6 +67,8 @@ class DbOperator:
             return False
 
         # Check if password can verify
+        print(user_info)
+        print(pbkdf2_sha256.verify(password, user_info[1]))
         if pbkdf2_sha256.verify(password, user_info[1]):
             return True
         else:
@@ -79,6 +81,7 @@ class DbOperator:
         """
         with self.connection.cursor() as cursor:
             cursor.execute(user_to_id_sql, username)
+            self.connection.commit()
             user = cursor.fetchone()
             userID = user[0]
             username = user[1]
@@ -93,6 +96,7 @@ class DbOperator:
         with self.connection.cursor() as cursor:
             cursor.execute(check_exists_sql, user_name)
             check_exists = cursor.fetchone()[0]
+            self.connection.commit()
 
         if check_exists == 1:
             return False

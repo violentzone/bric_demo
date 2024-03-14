@@ -45,6 +45,7 @@ class DbOperator:
         with self.connection.cursor() as cursor:
             cursor.execute(user2name_sql, user_id)
             name = cursor.fetchone()[0]
+            self.connection.commit()
         return name
 
     def unsign_num(self, user_id):
@@ -54,5 +55,6 @@ class DbOperator:
         with self.connection.cursor() as cursor:
             cursor.execute(unsign_sql, user_id)
             form_count = cursor.fetchone()
+            self.connection.commit()
         return form_count[0]
 
