@@ -8,6 +8,7 @@ operator = db_util.DbOperator()
 
 @loginApp.route('/login', methods=['POST'])
 def login():
+    operator.logon_check()
     username = request.json['username']
     password = request.json['password']
     if operator.login_check(username, password):

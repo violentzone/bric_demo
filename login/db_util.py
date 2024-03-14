@@ -106,3 +106,6 @@ class DbOperator:
                 cursor.execute(insert_user_sql, (user_name, name, password_hash, supervisorID_1, supervisorID_2, supervisorID_3, create_time, level, dept))
                 self.connection.commit()
             return True
+
+    def logon_check(self):
+        self.connection.ping(reconnect=True)
