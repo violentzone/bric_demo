@@ -124,6 +124,7 @@ class DbOperator:
         with self.connection.cursor() as cursor:
             cursor.execute(get_leave_type_sql)
             leave_query = cursor.fetchall()
+            self.connection.commit()
         leave_type_dict = {leave_set[0]: [leave_set[1], leave_set[2]] for leave_set in leave_query}
 
         # Get apply user information
