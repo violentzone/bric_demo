@@ -10,3 +10,16 @@ def creator_info():
     userid = request.json['user_id']
     user_info = operator.create_leave_getinfo(userid)
     return jsonify(user_info)
+
+
+@createApp.route('/creator_create', methods=['POST'])
+def creator_create():
+    creator = request.json['user_id']
+    substitute = request.json['substitute']
+    start_time = request.json['start_time']
+    end_time = request.json['end_time']
+    leave_type_idx = request.json['leave_type_selected']
+    reason = request.json['reason']
+    print(request.json)
+
+
