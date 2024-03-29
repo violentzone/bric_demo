@@ -14,11 +14,11 @@ def creator_info():
 
 @createApp.route('/creator_create', methods=['POST'])
 def creator_create():
-    creator = request.json['user_id']
+    creator_id = request.json['user_id']
     substitute = request.json['substitute']
     start_time = request.json['start_time']
     end_time = request.json['end_time']
-    leave_type_idx = request.json['leave_type_selected']
+    leave_type_idx = request.json['leave_type_idx']
     reason = request.json['reason']
     print(request.json)
 
