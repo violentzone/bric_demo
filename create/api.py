@@ -21,5 +21,6 @@ def creator_create():
     leave_type_idx = request.json['leave_type_idx']
     reason = request.json['reason']
     print(request.json)
+    return '1'
 
 

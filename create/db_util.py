@@ -4,6 +4,7 @@ from datetime import datetime
 from home import db_util as home_db
 from uuid import uuid4
 
+
 from create import util
 
 
@@ -105,6 +106,40 @@ class DbOperator:
         cursor.close()
         self.connection = connection
 
+    def get_leave_left(self, user_id: int) -> list[dict]:
+        """
+        Get current leave left of a user
+
+        Params
+        =======
+        user_id: The user id to check from
+
+        Return
+        =======
+        Dict of each leave left
+        """
+        leaveleft_user_sql = """
+        SELECT * FROM leavesystem.leaveleft
+        WHERE userID = %s
+        """
+        with self.connection.cursor() as cursor:
+            cursor.execute(leaveleft_user_sql, user_id)
+            leaveleft = cursor.fetchall()
+            self.connection.commit()
+        # Rearrange tuple of tuple into list of dict of each leave type
+        leaveleft_list = []
+        for _leave_info in  leaveleft:
+            d = {'leave_type': _leave_info[1], 'hours': _leave_info[2], 'expire': _leave_info[3]}
+            leaveleft_list += [d]
+        return leaveleft_list
+
+    # def get_current_applying(self, user_id):
+    #     current_applying_sql = """
+    #     SELECT * FROM leavesystem.create
+    #     """
+    #     with self.connection.cursor() as cursor:
+
+
     def create_leave_getinfo(self, user_id: int) -> dict:
         """
         Input userID return user inforamtion
@@ -172,7 +207,7 @@ class DbOperator:
             self.connection.commit()
         leave_remain_dict = {leave[0]: leave[1] for leave in leave_remain}
         creating_dict = {creating[0]: creating[1] for creating in creating_list}
-        dict_diff = util.leave_dict_diff(leave_remain_dict, creating_dict)
+        dict_diff = util.leave_dict_diff(leave_remain_dict, creating_dict)  # TODO: modify
         if dict_diff['status'] == 'valid':
             leave_remain_return = dict_diff['content']
             return {'blank_info': {'user_id': user_info[0], 'name': user_info[1], 'supervisor1': supervisorID_list[0], 'supervisor2': supervisorID_list[1], 'supervisor3': supervisorID_list[2], 'department': user_info[5], 'level': user_info[6], 'leave_remain': leave_remain_return},
@@ -182,7 +217,7 @@ class DbOperator:
             return {'blank_info': {'user_id': user_info[0], 'name': user_info[1], 'supervisor1': supervisorID_list[0], 'supervisor2': supervisorID_list[1], 'supervisor3': supervisorID_list[2], 'department': user_info[5], 'level': user_info[6], 'error': error_message},
                     'leave_type_dict': leave_type_dict}
 
-    def create_apply(self, user_id: int, start_time: datetime, end_time: datetime, leave_type: int, reason: str) -> dict:
+    def create_apply(self, user_id: int, start_time: datetime, end_time: datetime, leave_type_idx: int, reason: str) -> dict:
         """
         Function after user send out leave application
 
@@ -201,5 +236,4 @@ class DbOperator:
         If failed:
         {'result': 'fail', 'message': 'the_reason'}
         """
-
         # Check used leave and leave under apply
