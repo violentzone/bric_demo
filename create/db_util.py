@@ -128,16 +128,32 @@ class DbOperator:
             self.connection.commit()
         # Rearrange tuple of tuple into list of dict of each leave type
         leaveleft_list = []
-        for _leave_info in  leaveleft:
+        for _leave_info in leaveleft:
             d = {'leave_type': _leave_info[1], 'hours': _leave_info[2], 'expire': _leave_info[3]}
-            leaveleft_list += [d]
+            leaveleft_list += [d] # TODO: determine why use list of dict here, forgotten
         return leaveleft_list
 
-    # def get_current_applying(self, user_id):
-    #     current_applying_sql = """
-    #     SELECT * FROM leavesystem.create
-    #     """
-    #     with self.connection.cursor() as cursor:
+    def get_creating(self, userID: str) -> dict:
+        """
+        Input userID and gets currently applying leaves
+        Parameters
+        ----------
+        userID: [str] The target userID
+
+        Returns
+        Dict of {leaveType: hours}
+        -------
+        """
+        with self.connection.cursor() as cursor:
+            check_create_sql = """
+                SELECT leave_type, duration FROM leavesystem.create
+                WHERE userID = %s
+            """
+            cursor.execute(check_create_sql, userID)
+            creating_leave = cursor.fetchall()
+            # fetchall returns tuple of tuples, converting to dict
+            creating_dict = {_[0]: _[1] for _ in creating_leave}
+        return creating_dict
 
 
     def create_leave_getinfo(self, user_id: int) -> dict:
@@ -207,7 +223,7 @@ class DbOperator:
             self.connection.commit()
         leave_remain_dict = {leave[0]: leave[1] for leave in leave_remain}
         creating_dict = {creating[0]: creating[1] for creating in creating_list}
-        dict_diff = util.leave_dict_diff(leave_remain_dict, creating_dict)  # TODO: modify
+        dict_diff = util.leave_dict_diff(leave_remain_dict, creating_dict)
         if dict_diff['status'] == 'valid':
             leave_remain_return = dict_diff['content']
             return {'blank_info': {'user_id': user_info[0], 'name': user_info[1], 'supervisor1': supervisorID_list[0], 'supervisor2': supervisorID_list[1], 'supervisor3': supervisorID_list[2], 'department': user_info[5], 'level': user_info[6], 'leave_remain': leave_remain_return},
@@ -236,4 +252,5 @@ class DbOperator:
         If failed:
         {'result': 'fail', 'message': 'the_reason'}
         """
-        # Check used leave and leave under apply
+        # Check used leave left and leave under apply
+
