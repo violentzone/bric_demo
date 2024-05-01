@@ -12,7 +12,7 @@ def creator_info():
     return jsonify(user_info)
 
 
-@createApp.route('/creator_create', methods=['POST'])
+@createApp.route('/creator_submit', methods=['POST'])
 def creator_create():
     creator_id = request.json['user_id']
     substitute = request.json['substitute']
@@ -20,7 +20,7 @@ def creator_create():
     end_time = request.json['end_time']
     leave_type_idx = request.json['leave_type_idx']
     reason = request.json['reason']
-    print(request.json)
-    return '1'
+    response = operator.create_apply(creator_id, substitute, start_time, end_time, leave_type_idx, reason)
+    return jsonify(response)
 
 

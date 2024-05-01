@@ -106,7 +106,7 @@ class DbOperator:
         cursor.close()
         self.connection = connection
 
-    def get_leave_left(self, user_id: int) -> list[dict]:
+    def get_leave_left(self, user_id: int, leave_type_idx) -> dict:
         """
         Get current leave left of a user
 
@@ -119,28 +119,27 @@ class DbOperator:
         Dict of each leave left
         """
         leaveleft_user_sql = """
-        SELECT * FROM leavesystem.leaveleft
+        SELECT leave_type, hours FROM leavesystem.leaveleft
         WHERE userID = %s
+        AND leave_type = %s
         """
         with self.connection.cursor() as cursor:
-            cursor.execute(leaveleft_user_sql, user_id)
+            cursor.execute(leaveleft_user_sql, (user_id, leave_type_idx))
             leaveleft = cursor.fetchall()
             self.connection.commit()
-        # Rearrange tuple of tuple into list of dict of each leave type
-        leaveleft_list = []
-        for _leave_info in leaveleft:
-            d = {'leave_type': _leave_info[1], 'hours': _leave_info[2], 'expire': _leave_info[3]}
-            leaveleft_list += [d] # TODO: determine why use list of dict here, forgotten
-        return leaveleft_list
+        leaveleft_dict = {'leave_type': leaveleft[0][0], 'hours': leaveleft[0][1]}
+        return leaveleft_dict
 
-    def get_creating(self, userID: str) -> dict:
+    def get_creating(self, userID: int, leave_type_idx: int) -> dict:
         """
         Input userID and gets currently applying leaves
         Parameters
         ----------
         userID: [str] The target userID
+        leave_type_idx: The leave type to check
 
-        Returns
+        Return
+        =========
         Dict of {leaveType: hours}
         -------
         """
@@ -148,13 +147,14 @@ class DbOperator:
             check_create_sql = """
                 SELECT leave_type, duration FROM leavesystem.create
                 WHERE userID = %s
+                AND leave_type = %s
             """
-            cursor.execute(check_create_sql, userID)
+            cursor.execute(check_create_sql, (userID, leave_type_idx))
             creating_leave = cursor.fetchall()
+            self.connection.commit()
             # fetchall returns tuple of tuples, converting to dict
             creating_dict = {_[0]: _[1] for _ in creating_leave}
         return creating_dict
-
 
     def create_leave_getinfo(self, user_id: int) -> dict:
         """
@@ -233,7 +233,7 @@ class DbOperator:
             return {'blank_info': {'user_id': user_info[0], 'name': user_info[1], 'supervisor1': supervisorID_list[0], 'supervisor2': supervisorID_list[1], 'supervisor3': supervisorID_list[2], 'department': user_info[5], 'level': user_info[6], 'error': error_message},
                     'leave_type_dict': leave_type_dict}
 
-    def create_apply(self, user_id: int, start_time: datetime, end_time: datetime, leave_type_idx: int, reason: str) -> dict:
+    def create_apply(self, user_id: int, subsituteID: int, start_time: datetime, end_time: datetime, leave_type_idx: int, reason: str) -> dict:
         """
         Function after user send out leave application
 
@@ -252,5 +252,24 @@ class DbOperator:
         If failed:
         {'result': 'fail', 'message': 'the_reason'}
         """
-        # Check used leave left and leave under apply
+        # Get apply leave duration (to hours)
+        duration = (end_time - start_time).total_seconds()/3600
 
+        # Check used leave left minus creating under apply
+        leave_left_dict = self.get_leave_left(user_id, leave_type_idx)
+        leave_creating_dict = self.get_creating(user_id, leave_type_idx)
+        if not leave_left_dict['leave_type'] == leave_creating_dict['leave_type']:
+            return {'result': 'failed', 'message': 'different leave_type'}
+        else:
+            enough_remain_check = leave_left_dict['hours'] - leave_creating_dict['hours']
+            if enough_remain_check < 0:
+                return {'result': 'failed', 'message': 'not enough leave time'}
+            else:
+                with self.connection.cursor() as cursor:
+                    # Save to leavesystem.create
+                    submit_apply_sql = """
+                    INSERT INTO leavesystem.create VALUES(%s, %s, %s, %s, %s, %s, %s, %s)
+                    """
+                    cursor.execute(submit_apply_sql, (uuid4(), user_id, subsituteID, start_time, end_time, duration, leave_type_idx, reason))
+                    self.connection.commit()
+                return {'result': 'success', 'message': None}

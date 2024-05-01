@@ -8,7 +8,7 @@ def leave_dict_diff(dict1: dict, dict2: dict) -> dict:
     If succeed: {'statue': 'valid', content: {leaveID: hours}}
     if leave hour not enough: {'status': 'invalid, {leave_id} not enough'}
     """
-    return_dict = {'status': None}
+    return_dict = {'status': None, 'content': None}
     if dict2:
         for key in dict2:
             try:
