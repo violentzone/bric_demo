@@ -27,3 +27,24 @@ def leave_dict_diff(dict1: dict, dict2: dict) -> dict:
         return_dict['status'] = 'valid'
         return_dict['content'] = dict1
         return return_dict
+
+
+def add_same_leavetype(sql_tuple: tuple) -> dict:
+    """
+    Add identical leave type and forming a dict of {leave_type_index: hours}
+
+    Parameter
+    ========
+    sql_tuple: The tuple[(leave_type_index, hours)] queried from pymysql
+
+    Return
+    ========
+    {leave_type_index: hours}
+    """
+    d = {}
+    for i in sql_tuple:
+        if i[0] not in d:
+            d[i[0]] = i[1]
+        else:
+            d[i[0]] = d[i[0]] + i[1]
+    return d

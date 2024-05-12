@@ -16,9 +16,9 @@ def creator_info():
 def creator_create():
     creator_id = request.json['user_id']
     substitute = request.json['substitute']
-    start_time = request.json['start_time']
+    start_time = (request.json['start_time'])
     end_time = request.json['end_time']
-    leave_type_idx = request.json['leave_type_idx']
+    leave_type_idx = int(request.json['leave_type_idx'])
     reason = request.json['reason']
     response = operator.create_apply(creator_id, substitute, start_time, end_time, leave_type_idx, reason)
     return jsonify(response)

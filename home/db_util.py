@@ -24,11 +24,12 @@ class DbOperator:
             create_forms_sql = """
             CREATE TABLE IF NOT EXISTS leavesystem.forms(
             ID varchar(255) NOT NULL,
+            formID varchar(255) NOT NULL,
             userid BIGINT,
             signer1 BIGINT,
             signer2 BIGINT,
             signer3 BIGINT,
-            current BIGINT,
+            status BIGINT,
             type text,
             PRIMARY KEY (ID)
             )
@@ -54,7 +55,7 @@ class DbOperator:
 
     def unsign_num(self, user_id):
         unsign_sql = """
-        SELECT count(ID) FROM leavesystem.forms WHERE current = %s 
+        SELECT count(ID) FROM leavesystem.forms WHERE userid = %s AND status <> 0
         """
         with self.connection.cursor() as cursor:
             cursor.execute(unsign_sql, user_id)
