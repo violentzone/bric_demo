@@ -54,5 +54,6 @@ class DbOperator:
         with self.connection.cursor() as cursor:
             cursor.execute(unsign_sql, user_id)
             form_count = cursor.fetchone()
+        self.connection.commit()
         return form_count[0]
 
