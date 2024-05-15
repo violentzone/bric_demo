@@ -41,8 +41,9 @@ class DbOperator:
             add_user = """
             INSERT INTO leavesystem.users VALUES (1, 'admin', 'admin', %s, null, null, null, %s, '0000', 0);
             """
-
-            connection = POOL.connection()
+            with open('infos/db.json') as f:
+                config_setting = loads(f.read())
+            connection = pymysql.connect(host=config_setting['url'], user=config_setting['user'], password=config_setting['password'])
             with connection.cursor() as cursor:
                 cursor.execute(if_database)
                 cursor.execute(if_table)
