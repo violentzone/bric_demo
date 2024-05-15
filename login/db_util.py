@@ -3,6 +3,7 @@ import pymysql
 from json import loads
 from passlib.hash import pbkdf2_sha256
 from datetime import datetime
+from global_util.connection_pool import POOL
 
 class DbOperator:
     def __init__(self):
@@ -10,11 +11,8 @@ class DbOperator:
         """
         Init, check if able to te and create database 'leavesystem' if not exists
         """
-        # Get json config
-        with open('infos/db.json') as f:
-            db_config = loads(f.read())
         try:
-            self.connection = pymysql.connect(host=db_config['url'], user=db_config['user'], password=db_config['password'], database='leavesystem')
+            self.connection = POOL.connection()
 
         # If there's no db
         except:
@@ -44,14 +42,14 @@ class DbOperator:
             INSERT INTO leavesystem.users VALUES (1, 'admin', 'admin', %s, null, null, null, %s, '0000', 0);
             """
 
-            connection = pymysql.connect(host=db_config['url'], user=db_config['user'], password=db_config['password'])
+            connection = POOL.connection()
             with connection.cursor() as cursor:
                 cursor.execute(if_database)
                 cursor.execute(if_table)
                 cursor.execute(add_user, (admin_password, create_admin_time))
                 connection.commit()
 
-            self.connection = pymysql.connect(host=db_config['url'], user=db_config['user'], password=db_config['password'], database='leavesystem')
+            self.connection = POOL.connection()
 
     def login_check(self, user_name: str, password: str) -> bool:
         user_info_sql = """

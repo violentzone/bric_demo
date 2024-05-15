@@ -1,14 +1,13 @@
 import pymysql
-from json import loads
+from global_util.connection_pool import POOL
 class DbOperator:
     """
     Init of home page which show forms to sign
     create leaveSystem.froms if not exists
     """
     def __init__(self):
-        with open('infos/db.json') as f:
-            db_config = loads(f.read())
-        connection = pymysql.connect(host=db_config['url'], user=db_config['user'], password=db_config['password'], database='leavesystem')
+
+        connection = POOL.connection()
 
         # check if leavesystem.forms exists
         check_sql = """
@@ -34,7 +33,7 @@ class DbOperator:
                 connection.commit()
 
         finally:
-            self.connection = pymysql.connect(host=db_config['url'], user=db_config['user'], password=db_config['password'], database='leavesystem')
+            self.connection = POOL.connection()
 
 
     def id_to_name(self, user_id: int):

@@ -3,6 +3,7 @@ from json import loads
 from datetime import datetime
 from home import db_util as home_db
 from uuid import uuid4
+from global_util.connection_pool import POOL
 
 from create import util
 
@@ -12,10 +13,7 @@ class DbOperator:
         """
         Create leavesystem.create, leavesystem.leavetype and leavesystem.leaveleft table if not exists
         """
-        # Read setting
-        with open('infos/db.json') as f:
-            db_config = loads(f.read())
-        connection = pymysql.connect(host=db_config['url'], user=db_config['user'], password=db_config['password'], database=db_config['database'])
+        connection = POOL.connection()
 
         # Check create table syntext of MySQL
         check_create = """
