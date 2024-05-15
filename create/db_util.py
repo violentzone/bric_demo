@@ -95,7 +95,7 @@ class DbOperator:
             userID BIGINT NOT NULL,
             leave_type INT,
             hours float,
-            expire datetime, 
+            expire datetime
             )
             """
             cursor.execute(create_leaveleft_sql)
