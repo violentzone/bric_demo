@@ -1,1 +1,1 @@
-from api import checkApp
+from .api import checkApp

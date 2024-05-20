@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-
+from check.db_util import DbOperator
 
 checkApp = Blueprint('checkBP', __name__)
 
@@ -8,30 +8,26 @@ checkApp = Blueprint('checkBP', __name__)
 def get_check():
     """
     Pass in user ID and gets information needed for check webpage
-    {
-    last_year_inherit:
-    this_year_total:
-    last_year_deadline:
-    this_year_deadline:
-    overtime_total:
-    overtime_used:
-    overtime_overdue:
-    overtime_remain:
-    }
+    {top :{
+        last_year_inherit:
+        this_year_total:
+        last_year_deadline:
+        this_year_deadline:
+        overtime_total:
+        overtime_used:
+        overtime_overdue:
+        overtime_remain:
+        },
+     bottom: [
+        {
+        leave_type:
+        leave_start:
+        leave_end:
+        duration:
+        }, ...
+        ]}
     """
-    pass
+    user_id = request.json['user_id']
 
-@checkApp.route('/get_recent', methods=['POST'])
-def get_recent():
-    """
-    Pass in user ID and gets the user's recent(3) leave application
-    [
-    {
-    leave_type:
-    leave_start:
-    leave_end:
-    duration:
-    }, ...
-    ]
-    """
-    pass
+
+

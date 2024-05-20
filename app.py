@@ -18,6 +18,5 @@ app.register_blueprint(createApp)
 app.register_blueprint(checkApp)
 
 
-
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=3000)

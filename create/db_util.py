@@ -134,7 +134,7 @@ class DbOperator:
         Parameters
         ----------
         userID: [str] The target userID
-        leave_type_idx: The leave type to check
+        leave_type_idx: [int] The leave type to check
 
         Return
         =========
