@@ -74,7 +74,8 @@ class DbOperator:
             ('陪產假', 'Paternity leave'),
             ('喪假', 'Funeral leave'),
             ('無薪假', 'Unpaid leave'),
-            ('帶薪休假', 'Paid leave')
+            ('帶薪休假', 'Paid leave'),
+            ('補休', 'Overtime leave')
             """
             cursor.execute(create_leavetype_sql)
             cursor.execute(basic_leaves_sql)
@@ -95,7 +96,8 @@ class DbOperator:
             userID BIGINT NOT NULL,
             leave_type INT,
             hours float,
-            expire datetime
+            expire datetime, 
+            inherited int
             )
             """
             cursor.execute(create_leaveleft_sql)
