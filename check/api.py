@@ -29,6 +29,11 @@ def get_check():
         ]}
     """
     user_id = request.json['user_id']
-
-
-
+    # Getting all information
+    last_year_inherit = operator.get_last_year_annual_leave(user_id)
+    this_year_total = operator.get_current_year_annual_leave(user_id)
+    last_year_expire = operator.get_last_year_expire(user_id)
+    this_year_expire = operator.get_current_year_expire(user_id)
+    overtime_total = operator.get_overtime_total(user_id)
+    overtime_used = operator.get_over_time_used(user_id)
+    overtime_overdue

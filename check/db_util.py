@@ -1,5 +1,6 @@
 from global_util.connection_pool import POOL
 from datetime import datetime
+from global_util.global_util import get_leavetype_collate
 
 class DbOperator:
     def __init__(self):
@@ -19,6 +20,8 @@ class DbOperator:
                     CREATE TABLE IF NOT EXISTS leavesystem.leaveused(
                     userID BIGINT NOT NULL,
                     leave_type INT,
+                    start_time DATETIME,
+                    end_time DATETIME,
                     hours float,
                     applyID varchar(255)
                     )
@@ -153,12 +156,133 @@ class DbOperator:
             overtime_total_unuse = cursor.fetchone()[0]
 
             overtime_used_sql = """
-                 SELECT sum(hours) FROM leavesystem.leaveused
+                SELECT sum(hours) FROM leavesystem.leaveused
                 WHERE leave_type = 12
                 AND userID = %s
                 """
-            cursor.execute(overtime_unuse_sql, user_id)
+            cursor.execute(overtime_used_sql, user_id)
             overtime_total_used = cursor.fetchone()[0]
             self.connection.commit()
         total = overtime_total_unuse + overtime_total_used
         return total
+
+
+    def get_over_time_used(self, user_id: int) -> float:
+        """
+        Gets used overtime leave
+
+        Parameters
+        ----------
+        user_id: [int] The user's ID
+
+        Returns
+        -------
+        The float of used overtime leave
+        """
+        # TODO: function not tested yet
+        # Leave type of overtime leave is 12
+        with self.connection.curser() as cursor:
+            used_overtime_sql = """
+                SELECT sum(hours) FROM leavesystem.leaveused
+                WHERE userID = %s
+                AND leavetype = 12
+                """
+            cursor.execute(used_overtime_sql, user_id)
+            used_overtime_leave = cursor.fetchone()[0]
+            self.connection.commit()
+        return used_overtime_leave
+
+    def get_overtime_remain(self, user_id: int) -> float:
+        """
+        Gets remain overtime leave
+        Parameters
+        ----------
+        user_id: [int] The user's ID
+
+        Returns
+        -------
+        The float of remain overtime leave
+        """
+        # TODO: function not tested
+        with self.connection.cursor() as cursor:
+            remain_overtime_sql = """
+                SELECT sum(hours) FROM leavesystem.leave
+                WHERE leavetype = 12
+                AND userID = %s
+                """
+            cursor.execute(remain_overtime_sql, user_id)
+            remain_overtime = cursor.fetchone()[0]
+            self.connection.commit()
+        return remain_overtime
+
+    def get_overtime_overdue(self, user_id: int) -> float | None:
+        """
+        Gets the expired overtime leave
+
+        Parameters
+        ----------
+        user_id: [int] The user's ID
+
+        Returns
+        -------
+        The expired hours of the user
+        """
+        # TODO: function not tested
+        today = datetime.now().date()
+        with self.connection.cursor() as cursor:
+            expried_overtime_sql = """
+                SELECT sum(hours) FROM leavesystem.leaveleft
+                WHERE leavetype = 12
+                AND userID = %s
+                AND expire < %s 
+                """
+            cursor.execute(expried_overtime_sql, (user_id, today))
+            overdue_hours_ = cursor.fetchone()
+            self.connection.commit()
+        if overdue_hours_ is not None:
+            overdue_hours = overdue_hours_[0]
+            return overdue_hours
+        else: return None
+
+
+    def get_recent_used(self, user_id: int) -> list[dict]:
+        """
+
+        Parameters
+        ----------
+        user_id: [int] The user's ID
+
+        Returns
+        -------
+        A list of recent 3 used leave, format as below
+        [{leave_type:
+        leave_start:
+        leave_end:
+        duration:},
+        ...]
+        """
+        # TODO: function not tested yet
+        # Get recent 3 leaves
+        with self.connection.cursor() as cursor:
+            top_3_used_sql = """
+                SELECT leave_type, start_time, end_time, hours FROM leavesystem.leaveused
+                WHERE userID = %s
+                ORDER BY start_time
+                LIMIT 3
+                """
+            cursor.execute(top_3_used_sql, user_id)
+            used_leaves = cursor.fetchall()
+
+            # Get leave type to collate to chinese
+            leave_collate = get_leavetype_collate(cursor, 'chinese')
+
+            self.connection.commit()
+
+            # Gets the correct format
+            leave_list = []
+            if used_leaves is not None:
+                for leave in used_leaves:
+                    single_leave_dict = {'leavetype': leave_collate[leave[0]], 'start_time': leave[1], 'end_time': leave[2], 'duration': leave[3]}
+                    leave_list += [single_leave_dict]
+            return leave_list
+
