@@ -2,6 +2,7 @@ from global_util.connection_pool import POOL
 from datetime import datetime
 from global_util.global_util import get_leavetype_collate
 
+
 class DbOperator:
     def __init__(self):
         self.connection = POOL.connection()
@@ -133,7 +134,6 @@ class DbOperator:
             return None
 
     def get_overtime_total(self, user_id) -> float:
-        # TODO: This function is not tested
         """
         Get unuse and used overtime leave
 
@@ -163,9 +163,8 @@ class DbOperator:
             cursor.execute(overtime_used_sql, user_id)
             overtime_total_used = cursor.fetchone()[0]
             self.connection.commit()
-        total = overtime_total_unuse + overtime_total_used
+        total = (overtime_total_unuse if overtime_total_unuse is not None else 0) + (overtime_total_used if overtime_total_used is not None else 0)
         return total
-
 
     def get_over_time_used(self, user_id: int) -> float:
         """
@@ -179,18 +178,17 @@ class DbOperator:
         -------
         The float of used overtime leave
         """
-        # TODO: function not tested yet
         # Leave type of overtime leave is 12
-        with self.connection.curser() as cursor:
+        with self.connection.cursor() as cursor:
             used_overtime_sql = """
                 SELECT sum(hours) FROM leavesystem.leaveused
                 WHERE userID = %s
-                AND leavetype = 12
+                AND leave_type = 12
                 """
             cursor.execute(used_overtime_sql, user_id)
             used_overtime_leave = cursor.fetchone()[0]
             self.connection.commit()
-        return used_overtime_leave
+        return used_overtime_leave if used_overtime_leave is not None else 0
 
     def get_overtime_remain(self, user_id: int) -> float:
         """
@@ -203,17 +201,18 @@ class DbOperator:
         -------
         The float of remain overtime leave
         """
-        # TODO: function not tested
         with self.connection.cursor() as cursor:
+            today = str(datetime.now().date())
             remain_overtime_sql = """
-                SELECT sum(hours) FROM leavesystem.leave
-                WHERE leavetype = 12
+                SELECT sum(hours) FROM leavesystem.leaveleft
+                WHERE leave_type = 12
                 AND userID = %s
+                AND expire > %s
                 """
-            cursor.execute(remain_overtime_sql, user_id)
+            cursor.execute(remain_overtime_sql, (user_id, today))
             remain_overtime = cursor.fetchone()[0]
             self.connection.commit()
-        return remain_overtime
+        return remain_overtime if remain_overtime is not None else 0
 
     def get_overtime_overdue(self, user_id: int) -> float | None:
         """
@@ -227,26 +226,23 @@ class DbOperator:
         -------
         The expired hours of the user
         """
-        # TODO: function not tested
         today = datetime.now().date()
         with self.connection.cursor() as cursor:
             expried_overtime_sql = """
                 SELECT sum(hours) FROM leavesystem.leaveleft
-                WHERE leavetype = 12
+                WHERE leave_type = 12
                 AND userID = %s
                 AND expire < %s 
                 """
             cursor.execute(expried_overtime_sql, (user_id, today))
-            overdue_hours_ = cursor.fetchone()
+            overdue_hours = cursor.fetchone()[0]
             self.connection.commit()
-        if overdue_hours_ is not None:
-            overdue_hours = overdue_hours_[0]
-            return overdue_hours
-        else: return None
+        return overdue_hours if overdue_hours is not None else 0
 
 
     def get_recent_used(self, user_id: int) -> list[dict]:
         """
+        Gets recent 3 approved leaves
 
         Parameters
         ----------
@@ -261,7 +257,6 @@ class DbOperator:
         duration:},
         ...]
         """
-        # TODO: function not tested yet
         # Get recent 3 leaves
         with self.connection.cursor() as cursor:
             top_3_used_sql = """

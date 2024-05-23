@@ -36,4 +36,6 @@ def get_check():
     this_year_expire = operator.get_current_year_expire(user_id)
     overtime_total = operator.get_overtime_total(user_id)
     overtime_used = operator.get_over_time_used(user_id)
-    overtime_overdue
+    overtime_overdue = operator.get_overtime_overdue(user_id)
+    overtime_remain = operator.get_overtime_remain(user_id)
+

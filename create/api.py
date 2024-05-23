@@ -22,5 +22,3 @@ def creator_create():
     reason = request.json['reason']
     response = operator.create_apply(creator_id, substitute, start_time, end_time, leave_type_idx, reason)
     return jsonify(response)
-
-
