@@ -239,7 +239,6 @@ class DbOperator:
             self.connection.commit()
         return overdue_hours if overdue_hours is not None else 0
 
-
     def get_recent_used(self, user_id: int) -> list[dict]:
         """
         Gets recent 3 approved leaves
