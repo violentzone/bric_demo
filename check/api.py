@@ -38,16 +38,13 @@ def get_check():
     overtime_used = operator.get_over_time_used(user_id)
     overtime_overdue = operator.get_overtime_overdue(user_id)
     overtime_remain = operator.get_overtime_remain(user_id)
-    recent_used = operator.get_recent_used(user_id)
-    return jsonify({'top': {
-        'last_year_inherit': last_year_inherit,
-        'this_year_total': this_year_total,
-        'last_year_expire': last_year_expire,
-        'this_year_expire': this_year_expire,
-        'overtime_total': overtime_total,
-        'overtime_used': overtime_used,
-        'overtime_overdue': overtime_overdue,
-        'overtime_remain': overtime_remain
-        },
-        'bottom': recent_used})
 
+    return jsonify({'top': {'last_year_inherit': last_year_inherit,
+                            'this_year_total': this_year_total,
+                            'last_year_expire': last_year_expire,
+                            'this_year_expire': this_year_expire,
+                            'overtime_total': overtime_total,
+                            'overtime_used': overtime_used,
+                            'overtime_overdue': overtime_overdue,
+                            'overtime_remain': overtime_remain},
+                    'bottom': operator.get_recent_used(user_id)})
