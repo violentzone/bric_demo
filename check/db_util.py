@@ -1,6 +1,6 @@
 from global_util.connection_pool import POOL
 from datetime import datetime
-from global_util.global_util import get_leavetype_collate
+from global_util.global_util import get_leavetype_collate, get_user_info
 
 
 class DbOperator:
@@ -50,7 +50,7 @@ class DbOperator:
                 AND leave_type = 1
                 AND expire between %s and %s
                 """
-            cursor.execute(current_year_annal_leave_sql, (user_id, str(self.current_year + 1) + '-01-01', str(self.current_year + 1) + '-12-31'))
+            cursor.execute(current_year_annal_leave_sql, (user_id, str(self.current_year) + '-01-01', str(self.current_year + 1) + '-12-31'))
             current_year_annal_leave_amt = cursor.fetchone()[0]
         self.connection.commit()
         return current_year_annal_leave_amt
@@ -79,19 +79,42 @@ class DbOperator:
         self.connection.commit()
         return last_year_annal_leave_amt
 
-    def get_current_year_expire(self, user_id: int) -> str | None:
+    def get_used_leave(self, user_id: int) -> float:
+        """
+        Get used leave fo the user
+
+        Parameter
+        ==========
+        user_id: [int] The user's ID
+
+        Return
+        ==========
+        The amount of used leave
+        """
         with self.connection.cursor() as cursor:
-            """
-            Get the expiry date of annual leave of this year(which can be use this year)
+            get_used_sql = """
+                SELECT sum(hours) FROM leavesystem.leaveused
+                WHERE userID = %s
+                AND start_time >= %s
+                """
+            cursor.execute(get_used_sql, (user_id, str(self.current_year) + '01-01'))
+            used_leave_duration = cursor.fetchone()[0]
+            self.connection.commit()
+        return used_leave_duration
 
-            Parameter
-            ==========
-            user_id: [int] The user's ID
+    def get_current_year_expire(self, user_id: int) -> str | None:
+        """
+        Get the expiry date of annual leave of this year(which can be use this year)
 
-            Return
-            =========
-            The Expire date 
-            """
+        Parameter
+        ==========
+        user_id: [int] The user's ID
+
+        Return
+        =========
+        The Expire date
+        """
+        with self.connection.cursor() as cursor:
             current_expire_date_sql = """
                 SELECT expire FROM leavesystem.leaveleft
                 WHERE userID = %s
@@ -280,3 +303,7 @@ class DbOperator:
                     leave_list += [single_leave_dict]
             return leave_list
 
+    def get_user_name(self, user_id: int) -> str:
+        with self.connection.cursor() as cursor:
+            user = get_user_info(user_id, cursor)
+        return user['name']
