@@ -96,8 +96,9 @@ class DbOperator:
                 SELECT sum(hours) FROM leavesystem.leaveused
                 WHERE userID = %s
                 AND start_time >= %s
+                AND leave_type = 1
                 """
-            cursor.execute(get_used_sql, (user_id, str(self.current_year) + '01-01'))
+            cursor.execute(get_used_sql, (user_id, str(self.current_year) + '-01-01'))
             used_leave_duration = cursor.fetchone()[0]
             self.connection.commit()
         return used_leave_duration
@@ -119,6 +120,7 @@ class DbOperator:
                 SELECT expire FROM leavesystem.leaveleft
                 WHERE userID = %s
                 AND expire between %s and %s
+                AND leave_type = 1
                 """
             cursor.execute(current_expire_date_sql, (user_id, str(self.current_year + 1) + '-01-01', str(self.current_year + 1) + '-12-31'))
             this_year_expire = cursor.fetchone()
@@ -146,6 +148,7 @@ class DbOperator:
                        SELECT expire FROM leavesystem.leaveleft
                        WHERE userID = %s
                        AND expire between %s and %s
+                       AND leave_type = 1
                        """
             cursor.execute(last_expire_date_sql, (user_id, str(self.current_year) + '-01-01', str(self.current_year) + '-12-31'))
             last_year_expire = cursor.fetchone()
