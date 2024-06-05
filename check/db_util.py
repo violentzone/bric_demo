@@ -302,7 +302,7 @@ class DbOperator:
             leave_list = []
             if used_leaves is not None:
                 for leave in used_leaves:
-                    single_leave_dict = {'leavetype': leave_collate[leave[0]], 'start_time': leave[1], 'end_time': leave[2], 'duration': leave[3]}
+                    single_leave_dict = {'leavetype': leave_collate[leave[0]], 'start_time': leave[1].strftime("%Y/%m/%d %H:%M:%S"), 'end_time': leave[2].strftime("%Y/%m/%d %H:%M:%S"), 'duration': leave[3]}
                     leave_list += [single_leave_dict]
             return leave_list
 
