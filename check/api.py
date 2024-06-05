@@ -43,8 +43,9 @@ def get_check():
     overtime_overdue = operator.get_overtime_overdue(user_id)
     overtime_remain = operator.get_overtime_remain(user_id)
     user_name = operator.get_user_name(user_id)
+
     # Gets annual leave remain
-    annual_leave_unuse = last_year_inherit + this_year_total - used_leave
+    annual_leave_unuse = (last_year_inherit or 0) + (this_year_total or 0) - (used_leave or 0)
 
     return jsonify({'top': {'last_year_inherit': last_year_inherit,
                             'this_year_total': this_year_total,
