@@ -74,7 +74,8 @@ class DbOperator:
             ('陪產假', 'Paternity leave'),
             ('喪假', 'Funeral leave'),
             ('無薪假', 'Unpaid leave'),
-            ('帶薪休假', 'Paid leave')
+            ('帶薪休假', 'Paid leave'),
+            ('補休', 'Overtime leave')
             """
             cursor.execute(create_leavetype_sql)
             cursor.execute(basic_leaves_sql)
@@ -95,7 +96,8 @@ class DbOperator:
             userID BIGINT NOT NULL,
             leave_type INT,
             hours float,
-            expire datetime
+            expire datetime, 
+            inherited int
             )
             """
             cursor.execute(create_leaveleft_sql)
@@ -134,7 +136,7 @@ class DbOperator:
         Parameters
         ----------
         userID: [str] The target userID
-        leave_type_idx: The leave type to check
+        leave_type_idx: [int] The leave type to check
 
         Return
         =========
@@ -208,16 +210,18 @@ class DbOperator:
         # Get user remain leaves -> get leave type dict, find the key(leaveID), build element leave_remain dict of the minus applying leave respectively
         with self.connection.cursor() as cursor:
             # Remain leaves
+            today = str(datetime.now().date())
             get_leave_sql = """ 
             SELECT leave_type, hours FROM leavesystem.leaveleft
             WHERE userID = %s
+            AND expire >= %s
             """
             # Applying leaves
             get_applied_sql = """
             SELECT leave_type, duration FROM leavesystem.create
             WHERE userID = %s
             """
-            cursor.execute(get_leave_sql, user_id)
+            cursor.execute(get_leave_sql, (user_id, today))
             leave_remain = cursor.fetchall()
             cursor.execute(get_applied_sql, user_id)
             creating_list = cursor.fetchall()
@@ -296,6 +300,3 @@ class DbOperator:
                     cursor.execute(write_to_form_sql, (signID, createID, user_id, user_info['supervisorID_1'], user_info['supervisorID_2'], user_info['supervisorID_3'], 1, 'create'))
                     self.connection.commit()
                 return {'result': 'success', 'message': 'create_apply: success'}
-                # except:
-                #     return {'result': 'failed', 'message': 'create_apply: Cannot execute create in table create or forms'}
-
