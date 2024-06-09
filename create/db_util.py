@@ -96,6 +96,7 @@ class DbOperator:
             userID BIGINT NOT NULL,
             leave_type INT,
             hours float,
+            given datetime,
             expire datetime, 
             inherited int
             )

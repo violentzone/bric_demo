@@ -1,9 +1,8 @@
 from flask import Blueprint, request, jsonify
 from check.db_util import DbOperator
-from global_util.global_util import get_user_info
-
 checkApp = Blueprint('checkBP', __name__)
 operator = DbOperator()
+
 
 @checkApp.route('/get_check', methods=["POST"])
 def get_check():

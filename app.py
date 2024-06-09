@@ -5,6 +5,7 @@ from login import *
 from home import *
 from create import *
 from check import *
+from annualLeaveSummary import *
 
 app = Flask(__name__)
 jwt = JWTManager()
@@ -16,6 +17,7 @@ app.register_blueprint(loginApp)
 app.register_blueprint(homeApp)
 app.register_blueprint(createApp)
 app.register_blueprint(checkApp)
+app.register_blueprint(annual_leave_summaryApp)
 
 
 if __name__ == '__main__':

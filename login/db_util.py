@@ -5,6 +5,7 @@ from passlib.hash import pbkdf2_sha256
 from datetime import datetime
 from global_util.connection_pool import POOL
 
+
 class DbOperator:
     def __init__(self):
 
@@ -16,11 +17,12 @@ class DbOperator:
 
         # If there's no db
         except:
-            if_database ="""
+            if_database = """
             CREATE DATABASE IF NOT EXISTS leavesystem;"""
 
             # Prepare information for admin at the first establishment
             admin_password = pbkdf2_sha256.hash('admin', salt=b'begin')
+            ray_password = pbkdf2_sha256.hash('1234', salt=b'begin')
             create_admin_time = datetime.now()
 
             if_table = """
@@ -33,13 +35,14 @@ class DbOperator:
             supervisorID_2 BIGINT,
             supervisorID_3 BIGINT,
             createdate datetime,
+            ID_number varchar(20),
             department varchar(255),
             level int,
             PRIMARY KEY (ID) 
             );"""
 
             add_user = """
-            INSERT INTO leavesystem.users VALUES (1, 'admin', 'admin', %s, null, null, null, %s, '0000', 0);
+            INSERT INTO leavesystem.users VALUES (1, 'admin', 'admin', %s, null, null, null, %s, 'A123456789','0000', 0), (2, 'ray', 'Ray', %s, 1, null, null, %s, 'A123456787','0001', 1);
             """
             with open('infos/db.json') as f:
                 config_setting = loads(f.read())
@@ -47,7 +50,7 @@ class DbOperator:
             with connection.cursor() as cursor:
                 cursor.execute(if_database)
                 cursor.execute(if_table)
-                cursor.execute(add_user, (admin_password, create_admin_time))
+                cursor.execute(add_user, (admin_password, create_admin_time, ray_password, create_admin_time))
                 connection.commit()
 
             self.connection = POOL.connection()
