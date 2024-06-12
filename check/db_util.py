@@ -24,6 +24,7 @@ class DbOperator:
                     start_time DATETIME,
                     end_time DATETIME,
                     hours float,
+                    reason TEXT,
                     applyID varchar(255)
                     )
                     """
