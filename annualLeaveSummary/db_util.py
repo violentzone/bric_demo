@@ -55,6 +55,7 @@ class DbOperator:
             SELECT start_time, end_time, hours, leave_type, reason
             FROM leavesystem.leaveused
             WHERE userID = %s
+            SORT BY end_time DESC
             """
         with self.connection.cursor() as cursor:
             cursor.execute(annual_leave_summary, user_id)
