@@ -64,7 +64,7 @@ class DbOperator:
             leavetype_dict = global_util.get_leavetype_collate(cursor, 'chinese')
         # Convert data to desired type
         formatted_data = [
-            (leave[0].strftime('%Y-%m-%d'), leave[1].strftime('%Y-%m-%d'), leave[2], leavetype_dict[leave[3]], leave[4]) for leave
+            (leave[0].strftime('%Y-%m-%d %H:%M:%S'), leave[1].strftime('%Y-%m-%d %H:%M:%S'), leave[2], leavetype_dict[leave[3]], leave[4]) for leave
             in data]
 
         return formatted_data
