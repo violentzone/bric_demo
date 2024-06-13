@@ -1,6 +1,6 @@
 from datetime import datetime
 from global_util.connection_pool import POOL
-from global_util.global_util import get_leavetype_collate
+from global_util import global_util
 
 
 class DbOperator:
@@ -61,10 +61,25 @@ class DbOperator:
             data = cursor.fetchall()
 
         with self.connection.cursor() as cursor:
-            leavetype_dict = get_leavetype_collate(cursor, 'chinese')
+            leavetype_dict = global_util.get_leavetype_collate(cursor, 'chinese')
         # Convert data to desired type
         formatted_data = [
             (leave[0].strftime('%Y-%m-%d'), leave[1].strftime('%Y-%m-%d'), leave[2], leavetype_dict[leave[3]], leave[4]) for leave
             in data]
 
         return formatted_data
+
+    def get_user_name(self, user_id: int) -> str:
+        """
+        Simple get user's name
+        Parameters
+        ----------
+        user_id: [int] The user id to query
+
+        Returns
+        -------
+        The user's name
+        """
+        with self.connection.cursor() as cursor:
+            name = global_util.get_user_info(user_id, cursor)['name']
+        return name
