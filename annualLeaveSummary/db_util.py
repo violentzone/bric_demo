@@ -55,7 +55,7 @@ class DbOperator:
             SELECT start_time, end_time, hours, leave_type, reason
             FROM leavesystem.leaveused
             WHERE userID = %s
-            SORT BY end_time DESC
+            ORDER BY end_time DESC
             """
         with self.connection.cursor() as cursor:
             cursor.execute(annual_leave_summary, user_id)
@@ -63,11 +63,10 @@ class DbOperator:
 
         with self.connection.cursor() as cursor:
             leavetype_dict = global_util.get_leavetype_collate(cursor, 'chinese')
-        # Convert data to desired type
-        formatted_data = [
-            (leave[0].strftime('%Y-%m-%d %H:%M:%S'), leave[1].strftime('%Y-%m-%d %H:%M:%S'), leave[2], leavetype_dict[leave[3]], leave[4]) for leave
-            in data]
-
+        formatted_data = []
+        for leave in data:
+            format_leave = {'start_time': leave[0].strftime('%Y-%m-%d %H:%M:%S'), 'end_time': leave[1].strftime('%Y-%m-%d %H:%M:%S'), 'hours': leave[2], 'leave_type': leavetype_dict[leave[3]], 'reason': leave[4]}
+            formatted_data += [format_leave]
         return formatted_data
 
     def get_user_name(self, user_id: int) -> str:
