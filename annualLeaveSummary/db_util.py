@@ -10,6 +10,32 @@ class DbOperator:
         self.connection = connection
         self.current_year = datetime.today().year
 
+        check_overtime_leave_table_sql = """
+             SELECT TABLE_NAME FROM information_schema.tables
+            WHERE TABLE_SCHEMA = 'leavesystem'
+            AND TABLE_NAME = 'overtimeleave'
+            """
+        with connection.cursor() as cursor:
+            cursor.execute(check_overtime_leave_table_sql)
+            overtime_table_check = cursor.fetchone()
+            connection.commit()
+
+        if overtime_table_check is None:
+            create_overtime_leave_table = """
+                CREATE TABLE IF NOT EXISTS leavesystem.overtimeleave(
+                ID INT NOT NULL AUTO_INCREMENT,
+                userID BIGINT NOT NULL,
+                start_time datetime,
+                end_time datetime,
+                hours float,
+                reason text,
+                PRIMARY KEY (ID)
+                ) AUTO_INCREMENT = 1
+                """
+            with connection.cursor() as cursor:
+                cursor.execute(create_overtime_leave_table)
+                connection.commit()
+
     def get_init_expire(self, user_id) -> tuple:
         """
         Function to get the last exprie date fo current year's annual leave
@@ -83,3 +109,76 @@ class DbOperator:
         with self.connection.cursor() as cursor:
             name = global_util.get_user_info(user_id, cursor)['name']
         return name
+
+    def get_overtime_detail(self, user_id: int) -> list:
+        """
+        Get list of dictionary of overtime detail
+        Parameters
+        ----------
+        user_id: [int] The user id to query
+
+        Return
+        -------
+        list of dict of overtime detail
+        """
+        with self.connection.cursor() as cursor:
+            get_overtime_detail_sql = """
+                SELECT * FROM leavesystem.overtimeleave
+                where userID = %s
+                ORDER BY end_time DESC
+                """
+            cursor.execute(get_overtime_detail_sql, user_id)
+            overtime_data = cursor.fetchall()
+            self.connection.commit()
+        formatted_overtime_data = []
+        for line in overtime_data:
+            d = {'id': line[0], 'user_id': line[1], 'start_time': line[2].strftime("%Y-%m-%d %H:%M:%S"), 'end_time': line[3].strftime("%Y-%m-%d %H:%M:%S"), 'hours': line[4], 'reason': line[5]}
+            formatted_overtime_data += [d]
+        return formatted_overtime_data
+
+    def get_overtime_total(self, user_id: int) -> float:
+        """
+        Get total amount of the overtime acquired
+        Parameters
+        ----------
+        user_id: [int] The user id to query
+
+        Return
+        -------
+        Amount of total overtime
+        """
+        get_overtime_total_sql = """
+            SELECT SUM(hours)
+            FROM leavesystem.overtimeleave
+            WHERE userID = %s
+            """
+        with self.connection.cursor() as cursor:
+            cursor.execute(get_overtime_total_sql, user_id)
+            overtime_total = cursor.fetchone()[0]
+        return overtime_total or 0
+
+    def get_overtime_remain(self, user_id: int) -> float:
+        """
+        Get the subtraction of acquired overtime leave and minus used overtime leave
+        Parameters
+        ----------
+        user_id: [int] The user id to query
+
+        Return
+        -------
+        Amount of total overtime leave remains
+        """
+        overtime_total = self.get_overtime_total(user_id)
+        used_overtime_sql = """
+            SELECT SUM(hours)
+            FROM leavesystem.leaveused
+            WHERE userID = %s
+            AND leave_type = 12
+            """
+        with self.connection.cursor() as cursor:
+            cursor.execute(used_overtime_sql, user_id)
+            used_overtime = cursor.fetchone()[0]
+            self.connection.commit()
+        overtime_remain = overtime_total - (used_overtime or 0)
+        return overtime_remain
+
