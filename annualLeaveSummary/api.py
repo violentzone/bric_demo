@@ -21,5 +21,6 @@ def get_all_data():
     data = operator.get_overtime_detail(user_id)
     total = operator.get_overtime_total(user_id)
     remains = operator.get_overtime_remain(user_id)
-    full_data = {'data': data, 'total': total, 'remains': remains}
+    name = operator.get_user_name(user_id)
+    full_data = {'data': data, 'total': total, 'remains': remains, 'name': name}
     return jsonify(full_data)

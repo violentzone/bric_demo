@@ -27,6 +27,7 @@ class DbOperator:
                 userID BIGINT NOT NULL,
                 start_time datetime,
                 end_time datetime,
+                expire datetime,
                 hours float,
                 reason text,
                 PRIMARY KEY (ID)
@@ -123,7 +124,7 @@ class DbOperator:
         """
         with self.connection.cursor() as cursor:
             get_overtime_detail_sql = """
-                SELECT * FROM leavesystem.overtimeleave
+                SELECT start_time, end_time, hours, reason FROM leavesystem.overtimeleave
                 where userID = %s
                 ORDER BY end_time DESC
                 """
@@ -132,7 +133,7 @@ class DbOperator:
             self.connection.commit()
         formatted_overtime_data = []
         for line in overtime_data:
-            d = {'id': line[0], 'user_id': line[1], 'start_time': line[2].strftime("%Y-%m-%d %H:%M:%S"), 'end_time': line[3].strftime("%Y-%m-%d %H:%M:%S"), 'hours': line[4], 'reason': line[5]}
+            d = {'start_time': line[0].strftime("%Y-%m-%d %H:%M:%S"), 'end_time': line[1].strftime("%Y-%m-%d %H:%M:%S"), 'hours': line[2], 'reason': line[3]}
             formatted_overtime_data += [d]
         return formatted_overtime_data
 
