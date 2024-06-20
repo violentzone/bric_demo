@@ -13,7 +13,7 @@ class DbOperator:
         check_overtime_leave_table_sql = """
              SELECT TABLE_NAME FROM information_schema.tables
             WHERE TABLE_SCHEMA = 'leavesystem'
-            AND TABLE_NAME = 'overtimeleave'
+            AND TABLE_NAME = 'overtime'
             """
         with connection.cursor() as cursor:
             cursor.execute(check_overtime_leave_table_sql)
@@ -22,7 +22,7 @@ class DbOperator:
 
         if overtime_table_check is None:
             create_overtime_leave_table = """
-                CREATE TABLE IF NOT EXISTS leavesystem.overtimeleave(
+                CREATE TABLE IF NOT EXISTS leavesystem.overtime(
                 ID INT NOT NULL AUTO_INCREMENT,
                 userID BIGINT NOT NULL,
                 start_time datetime,
@@ -124,7 +124,7 @@ class DbOperator:
         """
         with self.connection.cursor() as cursor:
             get_overtime_detail_sql = """
-                SELECT start_time, end_time, hours, reason FROM leavesystem.overtimeleave
+                SELECT start_time, end_time, hours, reason FROM leavesystem.overtime
                 where userID = %s
                 ORDER BY end_time DESC
                 """
@@ -150,8 +150,9 @@ class DbOperator:
         """
         get_overtime_total_sql = """
             SELECT SUM(hours)
-            FROM leavesystem.overtimeleave
+            FROM leavesystem.leaveleft
             WHERE userID = %s
+            AND leave_type = 12
             """
         with self.connection.cursor() as cursor:
             cursor.execute(get_overtime_total_sql, user_id)
