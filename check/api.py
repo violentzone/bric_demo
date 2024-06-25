@@ -1,10 +1,12 @@
 from flask import Blueprint, request, jsonify
 from check.db_util import DbOperator
+from flask_jwt_extended import jwt_required
 checkApp = Blueprint('checkBP', __name__)
 operator = DbOperator()
 
 
 @checkApp.route('/get_check', methods=["POST"])
+@jwt_required()
 def get_check():
     """
     Pass in user ID and gets information needed for check webpage

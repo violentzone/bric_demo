@@ -1,5 +1,5 @@
 from flask import Blueprint, request, jsonify
-from flask_jwt_extended import create_access_token
+from flask_jwt_extended import create_access_token, jwt_required
 from login import db_util
 
 loginApp = Blueprint('loginBp', __name__)
@@ -22,9 +22,16 @@ def login():
 @loginApp.route('/create', methods=['POST'])
 def create_user():
     try:
-        username_create = request.json['username']
-        password_create = request.json['password']
-        operator.create_user(username_create, password_create)
+        # TODO: Not finished
         return True
     except:
         return False
+
+@loginApp.route('/login_check', methods=['POST'])
+@jwt_required()
+def login_check():
+    user_id = request.json['user_id']
+    # TODO: Check if userID in db
+    if user_id == 0:
+        return jsonify({'user': 'admin'})
+
