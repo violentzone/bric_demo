@@ -113,5 +113,3 @@ class DbOperator:
                 self.connection.commit()
             return True
 
-    def logon_check(self):
-        self.connection.ping(reconnect=True)
