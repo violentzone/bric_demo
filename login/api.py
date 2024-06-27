@@ -8,7 +8,6 @@ operator = db_util.DbOperator()
 
 @loginApp.route('/login', methods=['POST'])
 def login():
-    operator.logon_check()
     username = request.json['username']
     password = request.json['password']
     if operator.login_check(username, password):
@@ -27,11 +26,17 @@ def create_user():
     except:
         return False
 
+
 @loginApp.route('/login_check', methods=['POST'])
 @jwt_required()
 def login_check():
     user_id = request.json['user_id']
-    # TODO: Check if userID in db
-    if user_id == 0:
-        return jsonify({'user': 'admin'})
+    user_check = operator.check_user(user_id)
 
+    if user_check:
+        if user_id == '1':
+            return jsonify({'user': 'admin'})
+        else:
+            return jsonify({'user': 'member'})
+    else:
+        return jsonify({'user': None})

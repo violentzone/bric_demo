@@ -76,7 +76,6 @@ class DbOperator:
         else:
             return False
 
-
     def user_info(self, username: str):
         user_to_id_sql = """
         SELECT ID, username FROM leavesystem.users WHERE username = %s
@@ -113,3 +112,14 @@ class DbOperator:
                 self.connection.commit()
             return True
 
+    def check_user(self, user_id: int) -> bool:
+        check_exists_sql = """
+            SELECT EXISTS(SELECT * FROM leavesystem.users WHERE ID = %s)
+            """
+        with self.connection.cursor() as cursor:
+            cursor.execute(check_exists_sql, user_id)
+            ans = cursor.fetchone()[0]
+        if ans:
+            return True
+        else:
+            return False
