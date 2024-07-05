@@ -27,10 +27,11 @@ class DbOperator:
 
             if_table = """
             CREATE TABLE IF NOT EXISTS leavesystem.users (
-            ID BIGINT NOT NULL AUTO_INCREMENT,
+            ID BIGINT NOT NULL,
             userName varchar(255),
             name text,
             hashpassword varchar(255),
+            substitute BIGINT,
             supervisorID_1 BIGINT,
             supervisorID_2 BIGINT,
             supervisorID_3 BIGINT,
@@ -42,7 +43,7 @@ class DbOperator:
             );"""
 
             add_user = """
-            INSERT INTO leavesystem.users VALUES (1, 'admin', 'admin', %s, null, null, null, %s, 'A123456789','0000', 0), (2, 'ray', 'Ray', %s, 1, null, null, %s, 'A123456787','0001', 1);
+            INSERT INTO leavesystem.users VALUES (1, 'admin', 'admin', %s, null, null, null, null, %s, 'A123456789','0000', 0), (2, 'ray', 'Ray', %s, 1, 1, null, null, %s, 'A123456787','0001', 1);
             """
             with open('infos/db.json') as f:
                 config_setting = loads(f.read())
@@ -88,8 +89,27 @@ class DbOperator:
             username = user[1]
         return  userID, username
 
-    def create_user(self, user_name: str, password: str, name: str, supervisorID_1: int, supervisorID_2: int, supervisorID_3: int, level: int, dept: str) -> bool:
+    def create_user(self, user_id: int, user_name: str, password: str, substitute: int, name: str, identification: str, supervisorID_1: int, supervisorID_2: int, supervisorID_3: int, dept: str) -> bool:
+        """
+        Returns True if successfully create user, else return False
 
+        Parameters
+        ----------
+        user_id: [int] The employee ID
+        user_name:[str] The account of the employee to login
+        password:[str] The password to login
+        substitute: [int] The substitute of that employee
+        name:[str] The name display on top of the webpage
+        identification: [str] The ID of the person
+        supervisorID_1:[int] The primary supervisor, None if company leader
+        supervisorID_2:[int] The secondary supervisor, None if department leader
+        supervisorID_3:[int] The third supervisor, None if team leader
+        dept: [str] Department
+
+        Returns
+        -------
+        True if succeed, else False
+        """
         # Check if any identical userName in db
         check_exists_sql = """
         SELECT EXISTS (SELECT userName FROM leavesystem.users where userName = %s)
@@ -101,14 +121,28 @@ class DbOperator:
 
         if check_exists == 1:
             return False
+
         else:
             password_hash = pbkdf2_sha256.hash(password, salt=b'the_salt')
+
+            # Employee level determination
+            if supervisorID_3 is None:
+                if supervisorID_2 is None:
+                    if supervisorID_1 is None:
+                        level = 0
+                    else:
+                        level = 1
+                else:
+                    level = 2
+            else:
+                level = 3
+
             create_time = datetime.now()
             insert_user_sql = """
-            INSERT INTO leavesystem.users (userName, name, hashpassword, supervisorID_1, supervisorID_2, supervisorID_3, createdate, level, department) VALUES (%s, %s ,%s, %s, %s, %s, %s, %s, %s)"""
+            INSERT INTO leavesystem.users (ID, userName, name, hashpassword, substitute, supervisorID_1, supervisorID_2, supervisorID_3, createdate, ID_number ,level, department) VALUES (%s, %s ,%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
 
             with self.connection.cursor() as cursor:
-                cursor.execute(insert_user_sql, (user_name, name, password_hash, supervisorID_1, supervisorID_2, supervisorID_3, create_time, level, dept))
+                cursor.execute(insert_user_sql, (user_id, user_name, name, password_hash, substitute, supervisorID_1, supervisorID_2, supervisorID_3, create_time, identification ,level, dept))
                 self.connection.commit()
             return True
 
