@@ -18,7 +18,7 @@ def login():
         return jsonify({'verification': "Invalid password", 'access_token': None, 'userID': None, 'username': None})
 
 
-@loginApp.route('/create', methods=['POST'])
+@loginApp.route('/create_user', methods=['POST'])
 @jwt_required()
 def create_user():
     user_id = request.json['user_id']
@@ -28,7 +28,7 @@ def create_user():
     supervisor1 = request.json['supervisor1']
     supervisor2 = request.json['supervisor2']
     supervisor3 = request.json['supervisor3']
-    substitute = request.json['substute']
+    substitute = request.json['substitute']
     username = request.json['username']
     password = request.json['password']
     response = {'status': 'init', 'user_id': None}
@@ -37,7 +37,8 @@ def create_user():
         response_op = operator.create_user(user_id, username, password, substitute, name, identification, supervisor1, supervisor2, supervisor3, department)
         if response_op:
             response = {'status': 'succeed', 'user_id': user_id}
-
+        else:
+            response = {'status': 'ID_used', 'user_id': None}
     except:
         response = {'status': 'failed', 'user_id': None}
 

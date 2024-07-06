@@ -23,6 +23,7 @@ class DbOperator:
             # Prepare information for admin at the first establishment
             admin_password = pbkdf2_sha256.hash('admin', salt=b'begin')
             ray_password = pbkdf2_sha256.hash('1234', salt=b'begin')
+            yin_password = pbkdf2_sha256.hash('1234', salt=b'begin')
             create_admin_time = datetime.now()
 
             if_table = """
@@ -43,7 +44,7 @@ class DbOperator:
             );"""
 
             add_user = """
-            INSERT INTO leavesystem.users VALUES (1, 'admin', 'admin', %s, null, null, null, null, %s, 'A123456789','0000', 0), (2, 'ray', 'Ray', %s, 1, 1, null, null, %s, 'A123456787','0001', 1);
+            INSERT INTO leavesystem.users VALUES (1, 'admin', 'admin', %s, null, null, null, null, %s, 'A123456789','0000', 0), (2, 'ray', 'Ray', %s, 1, 1, null, null, %s, 'A123456787','0001', 1), (3, 'yin', 'Yin', %s, 2, 2, 1, null, %s, 'E124218661','0001', 2);
             """
             with open('infos/db.json') as f:
                 config_setting = loads(f.read())
@@ -51,7 +52,7 @@ class DbOperator:
             with connection.cursor() as cursor:
                 cursor.execute(if_database)
                 cursor.execute(if_table)
-                cursor.execute(add_user, (admin_password, create_admin_time, ray_password, create_admin_time))
+                cursor.execute(add_user, (admin_password, create_admin_time, ray_password, create_admin_time, yin_password, create_admin_time,))
                 connection.commit()
 
             self.connection = POOL.connection()
@@ -111,6 +112,7 @@ class DbOperator:
         True if succeed, else False
         """
         # Check if any identical userName in db
+        print('substitute:', substitute, 'supervisorID_2: ', type(supervisorID_2))
         check_exists_sql = """
         SELECT EXISTS (SELECT userName FROM leavesystem.users where userName = %s)
         """
@@ -142,7 +144,7 @@ class DbOperator:
             INSERT INTO leavesystem.users (ID, userName, name, hashpassword, substitute, supervisorID_1, supervisorID_2, supervisorID_3, createdate, ID_number ,level, department) VALUES (%s, %s ,%s, %s, %s, %s, %s, %s, %s, %s, %s, %s)"""
 
             with self.connection.cursor() as cursor:
-                cursor.execute(insert_user_sql, (user_id, user_name, name, password_hash, substitute, supervisorID_1, supervisorID_2, supervisorID_3, create_time, identification ,level, dept))
+                cursor.execute(insert_user_sql, (user_id, user_name, name, password_hash, substitute, supervisorID_1, supervisorID_2, supervisorID_3, create_time, identification, level, dept))
                 self.connection.commit()
             return True
 
