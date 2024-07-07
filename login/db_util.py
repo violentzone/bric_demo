@@ -63,7 +63,7 @@ class DbOperator:
         """
 
         with self.connection.cursor() as cursor:
-            cursor.execute(user_info_sql, user_name)
+            cursor.execute(user_info_sql, user_name.lower())
             user_info = cursor.fetchone()
 
         # Check if gets anything

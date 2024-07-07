@@ -26,8 +26,11 @@ class DbOperator:
             formID varchar(255) NOT NULL,
             userid BIGINT,
             signer1 BIGINT,
+            signer1_status boolean,
             signer2 BIGINT,
+            signer2_status boolean,
             signer3 BIGINT,
+            signer3_status boolean,
             status BIGINT,
             type text,
             PRIMARY KEY (ID)
