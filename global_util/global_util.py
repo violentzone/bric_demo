@@ -39,6 +39,18 @@ def get_leavetype_collate(cursor: Cursor, language: Literal['chinese', 'english'
         idx = 1
     else:
         idx = 2
+
     # Convert to dict of index: translation
     leavetype_format = {_[0]: _[idx] for _ in leavetype}
     return leavetype_format
+
+
+def get_user_list(cursor: Cursor):
+    sql = """
+    SELECT ID FROM leavesystem.users
+    """
+    cursor.execute(sql)
+    user_list = cursor.fetchall()
+    user_list = [_[0] for _ in user_list]
+    return user_list
+

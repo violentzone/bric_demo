@@ -2,12 +2,18 @@ from flask import Flask
 from flask_cors import CORS
 from flask_jwt_extended import JWTManager
 from datetime import timedelta
+from global_util import log_util
 from login import *
 from home import *
 from create import *
 from check import *
 from annualLeaveSummary import *
 
+# Set up loggin place
+log_util.log_init()
+log_util.make_user_log()
+
+# The main flask
 app = Flask(__name__)
 jwt = JWTManager()
 CORS(app)

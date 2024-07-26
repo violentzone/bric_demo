@@ -1,5 +1,7 @@
-import pymysql
+from loguru import logger
 from global_util.connection_pool import POOL
+
+
 class DbOperator:
     """
     Init of home page which show forms to sign
@@ -43,7 +45,6 @@ class DbOperator:
         finally:
             self.connection = POOL.connection()
 
-
     def id_to_name(self, user_id: int):
         user2name_sql = """
         SELECT name FROM leavesystem.users
@@ -63,5 +64,7 @@ class DbOperator:
             cursor.execute(unsign_sql, user_id)
             form_count = cursor.fetchone()
         self.connection.commit()
+        # Log
+        logger.bind(user_id=user_id).info(f'Function: {__name__}')
         return form_count[0]
 
