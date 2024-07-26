@@ -11,7 +11,6 @@ from annualLeaveSummary import *
 
 # Set up loggin place
 log_util.log_init()
-log_util.make_user_log()
 
 # The main flask
 app = Flask(__name__)

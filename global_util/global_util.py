@@ -53,4 +53,3 @@ def get_user_list(cursor: Cursor):
     user_list = cursor.fetchall()
     user_list = [_[0] for _ in user_list]
     return user_list
-
